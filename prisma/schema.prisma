@@ -13,21 +13,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Userr {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now()) // Track user creation time
-
-  role      Rolee     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  roleId    String   @db.ObjectId
-
-}
-
-model Rolee {
-  id    String   @id @default(auto()) @map("_id") @db.ObjectId
-  name  String   @unique
-  description String?
-  users Userr[]  // Virtual reference to associated users
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  email         String    @unique
+  firstname     String?
+  lastname      String?
+  isVerified    Boolean   @default(false)
+  password      String?    
+  refreshToken  String?
+  point         Int       @default(0)
+  
+  createdAt     DateTime  @default(now()) // Track user creation time
 }
 
