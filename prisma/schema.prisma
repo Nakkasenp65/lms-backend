@@ -13,6 +13,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Course {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  coursetitle   String    @unique
+  description   String?
+  thumbnail     String?
+  category      String?
+  instructor    User      @relation(fields: [instructorID], references: [id])
+  instructorID  String    @db.ObjectId
+}
+
 model User {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
   email         String    @unique
@@ -22,6 +32,7 @@ model User {
   password      String?    
   refreshToken  String?
   point         Int       @default(0)
+  courses       Course[]
   
   createdAt     DateTime  @default(now()) // Track user creation time
 }
