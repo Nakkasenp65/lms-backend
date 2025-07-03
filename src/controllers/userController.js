@@ -3,8 +3,7 @@ import userService from '../services/userService.js';
 import httpStatus from 'http-status';
 
 const getUser = catchAsync(async (req, res) => {
-  const { userId, email, word } = req.params;
-  console.log(userId, ' email: ', email, ' word: ', word);
+  const { userId } = req.params;
   const user = await userService.getUserById(userId);
   res.status(httpStatus.OK).json(user);
 });

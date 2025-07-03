@@ -9,6 +9,6 @@ userRouter
   .route('/')
   .get(userController.getUsers)
   .post(userController.createUser);
-userRouter.route('/:userId/:email/:word').get(userController.getUser);
+userRouter.route('/:userId').get(userController.getUser);
 
 export default userRouter;

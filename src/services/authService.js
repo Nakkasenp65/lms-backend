@@ -40,7 +40,7 @@ const verifyEmail = async (token) => {
 
 const sendVerificationEmail = async (id, email) => {
   const verificationToken = generateToken.getVerificationToken({ id, email });
-  const mailContent = `${process.env.FRONTEND_URL}users/verify-email?token=${verificationToken}`;
+  const mailContent = `${process.env.FRONTEND_URL}users/verify/${verificationToken}`;
   await sendEmail(email, 'Email Verification Test', mailContent);
 };
 

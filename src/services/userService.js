@@ -12,7 +12,7 @@ const createUser = async (email) => {
   });
 
   if (existingUser) {
-    throw new ApiError(httpStatus.CONFLICT, 'Email already exists');
+    return existingUser;
   }
 
   const user = await prisma.user.create({
@@ -67,6 +67,16 @@ const deleteUser = async (id) => {
   });
 };
 
+const hasPassword = async (user) => {
+  const existingUser = prisma.user.findUnique({
+    where: {
+      id: user.id,
+    },
+  });
+  if (existingUser.password === null) return false;
+  else return true;
+};
+
 export default {
   createUser,
   getUserById,
@@ -74,4 +84,5 @@ export default {
   getUsers,
   updateUser,
   deleteUser,
+  hasPassword,
 };
