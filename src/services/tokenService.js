@@ -1,11 +1,32 @@
-import 
+import jwt from 'jsonwebtoken';
+import config from '../config/config.js';
 
-const sendVerificationEmail = async () => {
+const getSessionToken = (email) => {
+  const accessToken = jwt.sign({ email: email }, config.jwt.accessSecret, {
+    expiresIn: '1d',
+    algorithm: 'HS256',
+  });
 
-  const verificationToken = generateToken.getVerificationToken(user);
+  const refreshToken = jwt.sign({ email: email }, config.jwt.refreshSecret, {
+    expiresIn: '60d',
+    algorithm: 'HS256',
+  });
 
-  const mailContent = `${process.env.FRONTEND_URL}users/verify-email?token=${verificationToken}`;
-  sendEmail(email, 'Email Verification Test', mailContent);
-} 
+  return { accessToken, refreshToken };
+};
 
-export default {sendVerificationEmail};
+const getVerificationToken = (userData) => {
+  const { id, email } = userData;
+
+  const verificationToken = jwt.sign(
+    {
+      id: id,
+      email: email,
+    },
+    config.jwt.verification,
+    { expiresIn: '1d', algorithm: 'HS256' },
+  );
+  return verificationToken;
+};
+
+export default { getSessionToken, getVerificationToken };

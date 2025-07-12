@@ -1,45 +1,42 @@
 import authService from '../services/authService.js';
 import userService from '../services/userService.js';
-import ApiError from '../utils/ApiError.js';
+// import ApiError from '../utils/ApiError.js';
 import catchAsync from '../utils/catchAsync.js';
 import httpStatus from 'http-status';
-import generateToken from '../utils/generateToken.js';
+import config from '../config/config.js';
+import tokenService from '../services/tokenService.js';
+
+const getVerficationToken = catchAsync(async (req, res) => {
+  const { email } = req.body;
+  const user = await userService.getUserByEmail(email);
+  const token = tokenService.getVerificationToken(user);
+  res.status(httpStatus.OK).json({ token: token });
+});
 
 const verifyEmail = catchAsync(async (req, res) => {
-  const token = req.params.token;
-  const tokens = await authService.verifyEmail(token);
-  res.cookie('refreshToken', tokens.refreshToken, {
+  const { token, password } = req.body;
+  const message = await authService.verifyEmail(token, password);
+  res.cookie('refreshToken', message.refreshToken, {
     httpOnly: true,
-    secure: process.env.BASE_URL === 'http://localhost:3000' ? false : true,
+    secure: process.env.NODE_ENV === 'production', // Only send over HTTPS in production
+    sameSite: 'Lax', // Or 'Strict' depending on your CSRF requirements
+    maxAge: 60 * 24 * 60 * 60 * 1000,
   });
-  res.cookie('accessToken', tokens.accessToken, {
-    httpOnly: true,
-    secure: process.env.BASE_URL === 'http://localhost:3000' ? false : true,
+
+  res.status(httpStatus.OK).send({
+    message: 'Email verified and password set successfully!',
+    accessToken: message.accessToken, // Send the access token for the frontend to store in memory
   });
-  res.status(httpStatus.OK).json({ message: 'Email Verification success' });
 });
 
 const register = catchAsync(async (req, res) => {
-  const { email } = req.body;
-  // const existingUser = await userService.getUserByEmail(email);
-  // if (existingUser) {
-  //   res
-  //     .status(httpStatus.CONFLICT)
-  //     .json({ message: 'Email has already registered' });
-  // }
-  // const user = await userService.createUser(email);
-  const user = await userService.getUserByEmail(email);
-  if (user) {
-    // authService.sendVerificationEmail(user.id, user.email);
-    const { id, email } = user;
-    const verificationToken = generateToken.getVerificationToken({ id, email });
-    res.status(httpStatus.CREATED).json({
-      // message: 'User registered successfully and verification email sent.',
-      message: `${process.env.FRONTEND_URL}users/verify/${verificationToken}`,
-    });
-  } else {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Error creating user');
-  }
+  const user = await userService.createUser(req.body.email);
+  await authService.sendVerificationEmail(user.id, user.email);
+  const verificationToken = tokenService.getVerificationToken(user);
+  res.status(httpStatus.CREATED).json({
+    // message: 'User registered successfully and verification email sent.',
+    message: `${config.url.front}users/verify/${verificationToken}`,
+  });
 });
 
-export default { verifyEmail, register };
+export default { getVerficationToken, verifyEmail, register };

@@ -1,18 +1,17 @@
 import { PrismaClient } from '@prisma/client';
 import httpStatus from 'http-status';
 import ApiError from '../utils/ApiError.js';
-// import bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 const createUser = async (email) => {
-  const existingUser = await prisma.user.findUnique({
-    where: {
-      email: email,
-    },
-  });
-
-  if (existingUser) {
-    return existingUser;
+  if (
+    await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    })
+  ) {
+    throw new ApiError(httpStatus.CONFLICT, 'Email has already taken');
   }
 
   const user = await prisma.user.create({

@@ -1,5 +1,7 @@
 import userController from '../../controllers/userController.js';
 import express from 'express';
+// import auth from '../../middlewares/auth.js';
+import passport from 'passport';
 
 const userRouter = express.Router();
 
@@ -9,6 +11,12 @@ userRouter
   .route('/')
   .get(userController.getUsers)
   .post(userController.createUser);
-userRouter.route('/:userId').get(userController.getUser);
+
+userRouter
+  .route('/:userId')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    userController.getUser,
+  );
 
 export default userRouter;

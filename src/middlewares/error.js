@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client';
 import ApiError from '../utils/ApiError.js';
 import httpStatus from 'http-status';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
